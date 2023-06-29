@@ -1,0 +1,19 @@
+{
+  "name": "chat-linx",
+  "version": "1.0.0",
+  "description": "*A chat app that seamlessly blends real-time messaging and a rich React interface. Connect, collaborate, and stay connected with sophisticated state management for a robust communication experience.*",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uuvedant4/chat-linx.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/uuvedant4/chat-linx/issues"
+  },
+  "homepage": "https://github.com/uuvedant4/chat-linx#readme"
+}
