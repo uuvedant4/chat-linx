@@ -1,5 +1,5 @@
 import "./App.css";
-import Register from "./Register";
+import Routes from "./Routes";
 import axios from "axios";
 import { UserContextProvider } from "./UserContext";
 
@@ -8,7 +8,7 @@ function App() {
   axios.defaults.withCredentials = true;
   return (
     <UserContextProvider>
-      <Register />
+      <Routes />
     </UserContextProvider>
   );
 }
