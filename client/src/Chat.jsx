@@ -1,8 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import Avatar from "./Avatar";
+import Logo from "./Logo";
+import { UserContext } from "./UserContext";
 
 const Chat = () => {
   const [ws, setWs] = useState(null);
   const [onlinePeople, setOnlinePeople] = useState({});
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const { username, id } = useContext(UserContext);
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:5000");
@@ -23,28 +28,32 @@ const Chat = () => {
     });
     setOnlinePeople(people);
   };
+  const selectContact = (userId) => {
+    setSelectedUserId(userId);
+  };
+
+  const onlinePeopleExcludingOurUser = { ...onlinePeople };
+  delete onlinePeopleExcludingOurUser[id];
 
   return (
     <div className="flex h-screen">
-      <div className="bg-white w-1/3 pl-4 pt-4">
-        <div className="text-blue-600 font-bold flex gap-2 mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="w-6 h-6"
+      <div className="bg-white w-1/3">
+        <Logo />
+        {Object.keys(onlinePeopleExcludingOurUser).map((userId) => (
+          <div
+            onClick={() => selectContact(userId)}
+            className={`flex gap-2 items-center border-b border-gray-100 cursor-pointer ${
+              selectedUserId === userId ? "bg-blue-50" : ""
+            }`}
+            key={userId}
           >
-            <path
-              fillRule="evenodd"
-              d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z"
-              clipRule="evenodd"
-            />
-          </svg>
-          ChatLinx
-        </div>
-        {Object.keys(onlinePeople).map((userId) => (
-          <div className="border-b border-gray-100 py-2" key={userId}>
-            {onlinePeople[userId]}
+            {userId === selectedUserId && (
+              <div className="rounded-r-md w-1 bg-blue-500 h-12"></div>
+            )}
+            <div className="flex gap-2 py-2 pl-4 items-center">
+              <Avatar userId={userId} username={onlinePeople[userId]} />
+              <span className="text-gray-800">{onlinePeople[userId]}</span>
+            </div>
           </div>
         ))}
       </div>
