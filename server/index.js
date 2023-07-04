@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const ws = require("ws");
+const Message = require("./models/Message.js");
 
 const app = express();
 dotenv.config();
@@ -87,6 +88,7 @@ const server = app.listen(PORT, () =>
 
 const wss = new ws.WebSocketServer({ server });
 wss.on("connection", (connection, req) => {
+  // read username and id from the cookie for this connection
   const cookies = req.headers.cookie;
   if (cookies) {
     const tokenCookieString = cookies
@@ -107,6 +109,32 @@ wss.on("connection", (connection, req) => {
     }
   }
 
+  connection.on("message", async (message) => {
+    messageData = JSON.parse(message.toString());
+    const { recipient, text } = messageData;
+    if (recipient && text) {
+      const messageDoc = await Message.create({
+        sender: connection.userId,
+        recipient,
+        text,
+      });
+
+      [...wss.clients]
+        .filter((client) => client.userId === recipient)
+        .forEach((client) => {
+          client.send(
+            JSON.stringify({
+              text,
+              sender: connection.userId,
+              recipient,
+              id: messageDoc._id,
+            })
+          );
+        });
+    }
+  });
+
+  // notify everyone about online users
   [...wss.clients].forEach((client) => {
     client.send(
       JSON.stringify({
