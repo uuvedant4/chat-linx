@@ -3,6 +3,7 @@ import Avatar from "./Avatar";
 import Logo from "./Logo";
 import { UserContext } from "./UserContext";
 import { uniqBy } from "lodash";
+import axios from "axios";
 
 const Chat = () => {
   const [ws, setWs] = useState(null);
@@ -14,10 +15,20 @@ const Chat = () => {
   const divUnderMessages = useRef();
 
   useEffect(() => {
+    connectToWs();
+  }, []);
+
+  const connectToWs = () => {
     const ws = new WebSocket("ws://localhost:5000");
     setWs(ws);
     ws.addEventListener("message", handleMessage);
-  }, []);
+    ws.addEventListener("close", () => {
+      setTimeout(() => {
+        console.log("Disconnected. Trying to reconnect.");
+        connectToWs();
+      }, 1000);
+    });
+  };
 
   const handleMessage = (e) => {
     const messageData = JSON.parse(e.data);
@@ -54,7 +65,7 @@ const Chat = () => {
         text: newMessageText,
         sender: id,
         recipient: selectedUserId,
-        id: Date.now(),
+        _id: Date.now(),
       },
     ]);
     setNewMessageText("");
@@ -66,10 +77,22 @@ const Chat = () => {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (selectedUserId) {
+      axios
+        .get(`/messages/${selectedUserId}`)
+        .then((response) => {
+          const { data } = response;
+          setMessages(data);
+        })
+        .catch((error) => console.log(error.message));
+    }
+  }, [selectedUserId]);
+
   const onlinePeopleExcludingOurUser = { ...onlinePeople };
   delete onlinePeopleExcludingOurUser[id];
 
-  const messagesWithoutDupes = uniqBy(messages, "id");
+  const messagesWithoutDupes = uniqBy(messages, "_id");
 
   return (
     <div className="flex h-screen">
@@ -87,7 +110,11 @@ const Chat = () => {
               <div className="rounded-r-md w-1 bg-blue-500 h-12"></div>
             )}
             <div className="flex gap-2 py-2 pl-4 items-center">
-              <Avatar userId={userId} username={onlinePeople[userId]} />
+              <Avatar
+                online={true}
+                userId={userId}
+                username={onlinePeople[userId]}
+              />
               <span className="text-gray-800">{onlinePeople[userId]}</span>
             </div>
           </div>
@@ -120,7 +147,7 @@ const Chat = () => {
                     }`}
                       key={key}
                     >
-                      {message.sender} {id}
+                      {message.text}
                     </div>
                   </div>
                 ))}

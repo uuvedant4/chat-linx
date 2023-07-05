@@ -18,6 +18,22 @@ app.use(express.json());
 app.use(cors({ credentials: true, origin: "http://localhost:5173" }));
 app.use(cookieParser());
 
+async function getUserDataFromRequest(req) {
+  return new Promise((resolve, reject) => {
+    const token = req.cookies?.token;
+    if (token) {
+      jwt.verify(token, process.env.JWT_SECRET_KEY, {}, (error, userData) => {
+        if (error) {
+          throw error;
+        }
+        resolve(userData);
+      });
+    } else {
+      reject("no token");
+    }
+  });
+}
+
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -81,6 +97,19 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.get("/messages/:userId", async (req, res) => {
+  const { userId } = req.params;
+  if (userId !== null) {
+    const userData = await getUserDataFromRequest(req);
+    const ourUserId = userData.userId;
+    const messages = await Message.find({
+      sender: { $in: [userId, ourUserId] },
+      recipient: { $in: [userId, ourUserId] },
+    }).sort({ createdAt: 1 });
+    res.json(messages);
+  }
+});
+
 connectDB();
 const server = app.listen(PORT, () =>
   console.log(`Server running at http://localhost:${PORT}/`)
@@ -127,7 +156,7 @@ wss.on("connection", (connection, req) => {
               text,
               sender: connection.userId,
               recipient,
-              id: messageDoc._id,
+              _id: messageDoc._id,
             })
           );
         });
