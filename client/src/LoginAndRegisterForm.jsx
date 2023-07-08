@@ -32,6 +32,7 @@ const LoginAndRegisterForm = () => {
         <input
           onChange={handleUsernameChange}
           value={username}
+          autoComplete="true"
           type="text"
           placeholder="username"
           className="block w-full rounded-sm p-2 mb-2 border"
@@ -39,6 +40,7 @@ const LoginAndRegisterForm = () => {
         <input
           onChange={handlePasswordChange}
           value={password}
+          autoComplete="true"
           className="block w-full rounded-sm p-2 mb-2 border"
           type="password"
           placeholder="password"
