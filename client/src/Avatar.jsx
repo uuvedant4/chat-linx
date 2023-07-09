@@ -19,7 +19,10 @@ const Avatar = ({ userId, username, online }) => {
       <div className="opacity-70 text-center w-full">{username[0]}</div>
       {online && (
         <div className="absolute w-3 h-3 bg-green-400 border border-white bottom-0 right-0 rounded-full"></div>
-      )}{" "}
+      )}
+      {!online && (
+        <div className="absolute w-3 h-3 bg-gray-400 border border-white bottom-0 right-0 rounded-full"></div>
+      )}
     </div>
   );
 };
