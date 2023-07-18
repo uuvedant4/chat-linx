@@ -97,6 +97,10 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.post("/logout", (req, res) => {
+  res.cookie("token", "", { secure: true, sameSite: "none" }).json("ok");
+});
+
 app.get("/messages/:userId", async (req, res) => {
   const { userId } = req.params;
   if (userId !== null) {
@@ -140,6 +144,7 @@ wss.on("connection", (connection, req) => {
     connection.ping();
     connection.deathTimer = setTimeout(() => {
       connection.isAlive = false;
+      clearInterval(connection.timer);
       connection.terminate();
       notifyAboutOnlinePeople();
       console.log("dead");
